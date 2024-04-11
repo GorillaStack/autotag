@@ -305,7 +305,7 @@ EOF
 
   # Deploy Collector CloudFormation Template
 
-  ACTIVE_REGIONS=$(aws ec2 describe-regions $AWS_CREDENTIALS --region "$MAIN_STACK_AWS_REGION" | jq -r '.Regions | sort_by(.RegionName) | .[].RegionName')
+  [[ -z $ACTIVE_REGIONS ]] && ACTIVE_REGIONS=$(aws ec2 describe-regions $AWS_CREDENTIALS --region "$MAIN_STACK_AWS_REGION" | jq -r '.Regions | sort_by(.RegionName) | .[].RegionName')
 
   for REGION in $ACTIVE_REGIONS ; do
 
@@ -441,7 +441,7 @@ EOF
 
   wait-for-stack 'Main' "$MAIN_STACK_NAME" "$MAIN_STACK_AWS_REGION"
 
-  ACTIVE_REGIONS=$(aws ec2 describe-regions $AWS_CREDENTIALS --region "$MAIN_STACK_AWS_REGION" | jq -r '.Regions[].RegionName')
+  [[ -z $ACTIVE_REGIONS ]] && ACTIVE_REGIONS=$(aws ec2 describe-regions $AWS_CREDENTIALS --region "$MAIN_STACK_AWS_REGION" | jq -r '.Regions[].RegionName')
 
   for REGION in $ACTIVE_REGIONS ; do
 
@@ -639,6 +639,7 @@ Options:
     -s3bu --s3-bucket            The S3 bucket where the code package will be uploaded
     -s3pr --s3-profile           A separate AWS credential profile to upload code packages to the S3 Bucket
     -rv   --release-version      The release version to deploy, e.g. '0.5.2' or 'latest'
+    -cr   --collector-regions    Regions where the collector CloudFormation stack will be deployed (space separated)
 
     -lr   --log-retention-days   The number of days to retain the Lambda Function's logs (default: 90)
     -ld   --log-level-debug      Enable the debug logging for the Lambda Function
@@ -651,6 +652,7 @@ EOF
 }
 
 PARAMS=''
+ACTIVE_REGIONS=''
 while (( "$#" )); do
   case "$1" in
     -h|--help)
@@ -675,6 +677,14 @@ while (( "$#" )); do
     -rv|--release-version)
       export RELEASE_VERSION=$2
       shift 2
+      ;;
+    -cr|--collector-regions)
+      while [[ $2 != -* && $# -gt 1 ]]; do
+        ACTIVE_REGIONS="$ACTIVE_REGIONS $2"
+        shift
+      done
+      ACTIVE_REGIONS="${ACTIVE_REGIONS#"${ACTIVE_REGIONS%%[![:space:]]*}"}"
+      shift
       ;;
     -lr|--log-retention-days)
       export LOG_RETENTION_DAYS=$2

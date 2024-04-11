@@ -90,6 +90,7 @@ Options:
     -s3bu --s3-bucket            The S3 bucket where the code package will be uploaded
     -s3pr --s3-profile           A separate AWS credential profile to upload code packages to the S3 Bucket
     -rv   --release-version      The release version to deploy, e.g. '0.5.2' or 'latest'
+    -cr   --collector-regions    Regions where the collector CloudFormation stack will be deployed (space separated)
     
     -lr   --log-retention-days   The number of days to retain the Lambda Function's logs (default: 90)
     -ld   --log-level-debug      Enable the debug logging for the Lambda Function
@@ -119,6 +120,12 @@ Create the infrastructure with the latest release using either the `default`, `$
 
 ```bash
 ./deploy_autotag.sh --region us-west-2 --s3-bucket my-autotag-bucket --release-version latest create
+```
+
+Create the infrastructure that tags resources only in specific regions.
+
+```bash
+./deploy_autotag.sh --region us-west-2 --s3-bucket my-autotag-bucket --release-version latest --collector-regions us-west-1 us-west-2 eu-west-1 create
 ```
 
 Create the infrastructure with the latest release using a named AWS credentials profile.
